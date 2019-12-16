@@ -20,9 +20,12 @@ from rlkit.util.video import dump_video
 
 def skewfit_full_experiment(variant):
     variant['skewfit_variant']['save_vae_data'] = True
+    print("Begin full_experiement_vairant_preprocess.")
     full_experiment_variant_preprocess(variant)
-    train_vae_and_update_variant(variant)
-    skewfit_experiment(variant['skewfit_variant'])
+    print("full_experiment_variant_preprocess Done. Begin train_vae_and_update_variant.")
+    env = train_vae_and_update_variant(variant) # YF
+    print("skewfit train_vae_and_update_variant done. Begin skewfit experiments!")
+    skewfit_experiment(variant['skewfit_variant'], env) # YF
 
 
 def full_experiment_variant_preprocess(variant):
@@ -60,13 +63,14 @@ def train_vae_and_update_variant(variant):
     skewfit_variant = variant['skewfit_variant']
     train_vae_variant = variant['train_vae_variant']
     if skewfit_variant.get('vae_path', None) is None:
+        print("vae_path is None, generate brand new vae data")
         logger.remove_tabular_output(
             'progress.csv', relative_to_snapshot_dir=True
         )
         logger.add_tabular_output(
             'vae_progress.csv', relative_to_snapshot_dir=True
         )
-        vae, vae_train_data, vae_test_data = train_vae(train_vae_variant,
+        vae, vae_train_data, vae_test_data, env = train_vae(train_vae_variant,
                                                        return_data=True)
         if skewfit_variant.get('save_vae_data', False):
             skewfit_variant['vae_train_data'] = vae_train_data
@@ -83,12 +87,13 @@ def train_vae_and_update_variant(variant):
         skewfit_variant['vae_path'] = vae  # just pass the VAE directly
     else:
         if skewfit_variant.get('save_vae_data', False):
-            vae_train_data, vae_test_data, info = generate_vae_dataset(
+            vae_train_data, vae_test_data, info, env = generate_vae_dataset( # YF
                 train_vae_variant['generate_vae_dataset_kwargs']
             )
             skewfit_variant['vae_train_data'] = vae_train_data
             skewfit_variant['vae_test_data'] = vae_test_data
 
+    return env # YF
 
 def train_vae(variant, return_data=False):
     from rlkit.util.ml_util import PiecewiseLinearSchedule
@@ -105,7 +110,7 @@ def train_vae(variant, return_data=False):
     representation_size = variant["representation_size"]
     generate_vae_dataset_fctn = variant.get('generate_vae_data_fctn',
                                             generate_vae_dataset)
-    train_data, test_data, info = generate_vae_dataset_fctn(
+    train_data, test_data, info, env = generate_vae_dataset_fctn(
         variant['generate_vae_dataset_kwargs']
     )
     logger.save_extra_data(info)
@@ -150,8 +155,8 @@ def train_vae(variant, return_data=False):
         t.update_train_weights()
     logger.save_extra_data(m, 'vae.pkl', mode='pickle')
     if return_data:
-        return m, train_data, test_data
-    return m
+        return m, train_data, test_data, env
+    return m, env
 
 
 def generate_vae_dataset(variant):
@@ -211,6 +216,8 @@ def generate_vae_dataset(variant):
             if env_id is not None:
                 import gym
                 import multiworld
+                import softgym
+                softgym.register_flex_envs()
                 multiworld.register_all_envs()
                 env = gym.make(env_id)
             else:
@@ -294,10 +301,10 @@ def generate_vae_dataset(variant):
     n = int(N * test_p)
     train_dataset = dataset[:n, :]
     test_dataset = dataset[n:, :]
-    return train_dataset, test_dataset, info
+    return train_dataset, test_dataset, info, env # YF
 
 
-def get_envs(variant):
+def get_envs(variant, env = None): # YF
     from multiworld.core.image_env import ImageEnv
     from rlkit.envs.vae_wrapper import VAEWrappedEnv
     from rlkit.util.io import load_local_or_remote_file
@@ -314,15 +321,20 @@ def get_envs(variant):
 
     vae = load_local_or_remote_file(vae_path) if type(
         vae_path) is str else vae_path
-    if 'env_id' in variant:
-        import gym
-        import multiworld
-        multiworld.register_all_envs()
-        env = gym.make(variant['env_id'])
-    else:
-        env = variant["env_class"](**variant['env_kwargs'])
+
+    if env is None: # YF.
+        if 'env_id' in variant:
+            import gym
+            import multiworld
+            import softgym
+            softgym.register_flex_envs()
+            multiworld.register_all_envs()
+            env = gym.make(variant['env_id'])
+        else:
+            env = variant["env_class"](**variant['env_kwargs'])
+
     if not do_state_exp:
-        if isinstance(env, ImageEnv):
+        if isinstance(env, ImageEnv): # or env_id == 'PourWaterImgControl...'
             image_env = env
         else:
             image_env = ImageEnv(
@@ -443,7 +455,7 @@ def skewfit_preprocess_variant(variant):
         variant['achieved_goal_key'] = 'state_acheived_goal'
 
 
-def skewfit_experiment(variant):
+def skewfit_experiment(variant, env = None): # YF
     import rlkit.torch.pytorch_util as ptu
     from rlkit.data_management.online_vae_replay_buffer import \
         OnlineVaeRelabelingBuffer
@@ -452,7 +464,7 @@ def skewfit_experiment(variant):
     from rlkit.torch.vae.vae_trainer import ConvVAETrainer
 
     skewfit_preprocess_variant(variant)
-    env = get_envs(variant)
+    env = get_envs(variant, env) # YF
 
     uniform_dataset_fn = variant.get('generate_uniform_dataset_fn', None)
     if uniform_dataset_fn:

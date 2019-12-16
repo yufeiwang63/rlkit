@@ -13,7 +13,8 @@ if __name__ == "__main__":
         online_vae_exploration=False,
         imsize=48,
         init_camera=sawyer_init_camera_zoomed_in,
-        env_id='SawyerPushNIPSEasy-v0',
+        # env_id='SawyerPushNIPSEasy-v0',
+        env_id='PourWaterPosControlGoalConditioned-v0',
         skewfit_variant=dict(
             save_video=True,
             custom_goal_sampler='replay_buffer',
@@ -23,22 +24,22 @@ if __name__ == "__main__":
             ),
             save_video_period=100,
             qf_kwargs=dict(
-                hidden_sizes=[400, 300],
+                hidden_sizes=[100, 100],
             ),
             policy_kwargs=dict(
-                hidden_sizes=[400, 300],
+                hidden_sizes=[100, 100],
             ),
             vf_kwargs=dict(
-                hidden_sizes=[400, 300],
+                hidden_sizes=[100, 100],
             ),
             max_path_length=50,
             algo_kwargs=dict(
-                batch_size=1024,
+                batch_size=32,#1024,
                 num_epochs=1000,
-                num_eval_steps_per_epoch=500,
-                num_expl_steps_per_train_loop=500,
-                num_trains_per_train_loop=1000,
-                min_num_steps_before_training=10000,
+                num_eval_steps_per_epoch=300,
+                num_expl_steps_per_train_loop=300,
+                num_trains_per_train_loop=10,#1000,
+                min_num_steps_before_training=100,#10000,
                 vae_training_schedule=vae_schedules.custom_schedule_2,
                 oracle_data=False,
                 vae_save_period=50,
@@ -90,7 +91,7 @@ if __name__ == "__main__":
             dump_skew_debug_plots=False,
             decoder_activation='gaussian',
             generate_vae_dataset_kwargs=dict(
-                N=40,
+                N=5,
                 test_p=.9,
                 use_cached=False,
                 show=False,
@@ -137,9 +138,9 @@ if __name__ == "__main__":
         __file__.replace('/', '-').replace('_', '-').split('.')[0]
     )
 
-    n_seeds = 3
-    mode = 'ec2'
-    exp_prefix = 'rlkit-skew-fit-pusher-reference-sample-from-true-prior-take2'
+    # n_seeds = 3
+    # mode = 'ec2'
+    # exp_prefix = 'rlkit-skew-fit-pusher-reference-sample-from-true-prior-take2'
 
     for exp_id, variant in enumerate(sweeper.iterate_hyperparameters()):
         for _ in range(n_seeds):
@@ -148,7 +149,7 @@ if __name__ == "__main__":
                 exp_prefix=exp_prefix,
                 mode=mode,
                 variant=variant,
-                use_gpu=True,
+                use_gpu=False,
                 num_exps_per_instance=3,
                 gcp_kwargs=dict(
                     terminate=True,
