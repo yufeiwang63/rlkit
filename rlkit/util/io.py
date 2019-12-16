@@ -2,7 +2,7 @@ import joblib
 import numpy as np
 import pickle
 
-import boto3
+# import boto3
 
 from rlkit.launchers.conf import LOCAL_LOG_DIR, AWS_S3_PATH
 import os
@@ -34,21 +34,22 @@ def sync_down(path, check_exists=True):
 
     local_dir = os.path.dirname(local_path)
     os.makedirs(local_dir, exist_ok=True)
+    print("in sync_down, local_path is:", local_path, 'local_dir is:', local_dir )
 
     if is_docker:
         from doodad.ec2.autoconfig import AUTOCONFIG
         os.environ["AWS_ACCESS_KEY_ID"] = AUTOCONFIG.aws_access_key()
         os.environ["AWS_SECRET_ACCESS_KEY"] = AUTOCONFIG.aws_access_secret()
 
-    full_s3_path = os.path.join(AWS_S3_PATH, path)
-    bucket_name, bucket_relative_path = split_s3_full_path(full_s3_path)
-    try:
-        bucket = boto3.resource('s3').Bucket(bucket_name)
-        bucket.download_file(bucket_relative_path, local_path)
-    except Exception as e:
-        local_path = None
-        print("Failed to sync! path: ", path)
-        print("Exception: ", e)
+    # full_s3_path = os.path.join(AWS_S3_PATH, path)
+    # bucket_name, bucket_relative_path = split_s3_full_path(full_s3_path)
+    # try:
+    #     bucket = boto3.resource('s3').Bucket(bucket_name)
+    #     bucket.download_file(bucket_relative_path, local_path)
+    # except Exception as e:
+    #     local_path = None
+    #     print("Failed to sync! path: ", path)
+    #     print("Exception: ", e)
     return local_path
 
 
@@ -63,6 +64,8 @@ def split_s3_full_path(s3_path):
 
 
 def load_local_or_remote_file(filepath, file_type=None):
+    print("in loda_local_or_remote_file, filepath is: ", filepath)
+    local_path = filepath
     local_path = local_path_from_s3_or_local_path(filepath)
     if file_type is None:
         extension = local_path.split('.')[-1]
