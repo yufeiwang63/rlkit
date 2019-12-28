@@ -286,6 +286,7 @@ class OnlineVaeRelabelingBuffer(SharedObsDictRelabelingBuffer):
             batch_size,
         )
 
+        print("in online vae_replay_buffer random_vae_training_data")
         next_image_obs = normalize_image(
             self._next_obs[self.decoded_obs_key][weighted_idxs]
         )
