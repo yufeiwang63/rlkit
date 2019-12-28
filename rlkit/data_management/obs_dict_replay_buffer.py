@@ -112,6 +112,7 @@ class ObsDictRelabelingBuffer(ReplayBuffer):
         next_obs = flatten_dict(next_obs, self.ob_keys_to_save + self.internal_keys)
         obs = preprocess_obs_dict(obs)
         next_obs = preprocess_obs_dict(next_obs)
+        print("in obs_dict_replay_buffer, after preprocess_obs_dict, next_obs dtype is: ", next_obs['image_observation'].dtype)
 
         if self._top + path_len >= self.max_size:
             """

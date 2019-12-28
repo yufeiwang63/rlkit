@@ -28,9 +28,9 @@ def multitask_rollout(
     path_length = 0
     agent.reset()
     o = env.reset()
-    print("inside multitask_rollout, after env.reset(), o is: ", o)
-    print("o['image_observation'] is: ", o['image_observation'])
-    print("o['image_observation'] dtype is: ", o['image_observation'].dtype)
+    # print("inside multitask_rollout, after env.reset(), o is: ", o)
+    # print("o['image_observation'] is: ", o['image_observation'])
+    # print("o['image_observation'] dtype is: ", o['image_observation'].dtype)
     if render:
         env.render(**render_kwargs)
     goal = o[desired_goal_key]
