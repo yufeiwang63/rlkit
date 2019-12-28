@@ -4,7 +4,7 @@ import time
 
 import numpy as np
 import scipy.misc
-# import skvideo.io
+import skvideo.io
 
 from rlkit.envs.vae_wrapper import VAEWrappedEnv
 
@@ -30,6 +30,7 @@ def dump_video(
     W = imsize
     N = rows * columns
     for i in range(N):
+        # print(i)
         start = time.time()
         path = rollout_function(
             env,
@@ -37,6 +38,7 @@ def dump_video(
             max_path_length=horizon,
             render=False,
         )
+        # print("after rollout")
         is_vae_env = isinstance(env, VAEWrappedEnv)
         l = []
         for d in path['full_observations']:
@@ -56,6 +58,7 @@ def dump_video(
                 )
             )
         frames += l
+        # print("here ok")
 
         if dirname_to_save_images:
             rollout_dir = osp.join(dirname_to_save_images, subdirname, str(i))

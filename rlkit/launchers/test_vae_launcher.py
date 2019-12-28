@@ -18,14 +18,12 @@ from rlkit.util.io import load_local_or_remote_file
 from rlkit.util.video import dump_video
 
 
-def skewfit_full_experiment(variant):
+def test_initial_vae_training(variant):
     variant['skewfit_variant']['save_vae_data'] = True
     print("Begin full_experiement_vairant_preprocess.")
     full_experiment_variant_preprocess(variant)
     print("full_experiment_variant_preprocess Done. Begin train_vae_and_update_variant.")
-    env = train_vae_and_update_variant(variant) # YF
-    print("skewfit train_vae_and_update_variant done. Begin skewfit experiments!")
-    skewfit_experiment(variant['skewfit_variant'], env) # YF
+    _ = train_vae_and_update_variant(variant) # YF
 
 
 def full_experiment_variant_preprocess(variant):
@@ -133,9 +131,6 @@ def train_vae(variant, return_data=False):
     variant['vae_kwargs']['imsize'] = variant.get('imsize')
 
     # YF: for debug initially collected vae training data
-
-
-
 
     m = ConvVAE(
         representation_size,

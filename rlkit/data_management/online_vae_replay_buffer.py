@@ -12,6 +12,7 @@ from rlkit.torch.vae.vae_trainer import (
     relative_probs_from_log_probs,
 )
 
+eps = 1e-10
 
 class OnlineVaeRelabelingBuffer(SharedObsDictRelabelingBuffer):
 
