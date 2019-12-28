@@ -326,7 +326,7 @@ class ConvVAETrainer(object):
         beta = float(self.beta_schedule.get_value(epoch))
         for batch_idx in range(batches):
             if sample_batch is not None:
-                print("vae sample batch here")
+                # print("vae sample batch here")
                 data = sample_batch(self.batch_size, epoch)
                 # obs = data['obs']
                 next_obs = data['next_obs']

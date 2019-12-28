@@ -2,7 +2,7 @@ import rlkit.util.hyperparameter as hyp
 from multiworld.envs.mujoco.cameras import sawyer_init_camera_zoomed_in
 from rlkit.launchers.launcher_util import run_experiment
 import rlkit.torch.vae.vae_schedules as vae_schedules
-from rlkit.launchers.skewfit_experiments import skewfit_full_experiment
+from rlkit.launchers.test_vae_launcher import test_initial_vae_training
 from rlkit.torch.vae.conv_vae import imsize48_default_architecture, imsize84_default_architecture
 
 
@@ -14,7 +14,8 @@ if __name__ == "__main__":
         imsize=84,
         init_camera=sawyer_init_camera_zoomed_in,
         # env_id='SawyerPushNIPSEasy-v0',
-        env_id='PourWaterPosControlGoalConditioned-v0',
+        # env_id='PourWaterPosControlGoalConditioned-v0',
+        env_id = 'ClothFlattenSphereControlGoalConditioned-v0',
         skewfit_variant=dict(
             save_video=True,
             custom_goal_sampler='replay_buffer',
@@ -64,7 +65,7 @@ if __name__ == "__main__":
                     decoder_distribution='gaussian_identity_variance',
                     num_latents_to_sample=10,
                 ),
-                power=0,
+                power=-1,
                 relabeling_goal_sampling_mode='vae_prior',
             ),
             exploration_goal_sampling_mode='vae_prior',
@@ -86,19 +87,19 @@ if __name__ == "__main__":
         ),
         train_vae_variant=dict(
             debug_initial_vae_dataset=True, # YF
-            representation_size=4,
+            representation_size=8,
             beta=20,
-            num_epochs=0,
+            num_epochs=1000, # YF: perform training of the VAE on the initial datasets
             dump_skew_debug_plots=False,
             decoder_activation='gaussian',
             generate_vae_dataset_kwargs=dict(
-                N=40,
+                N=400, # YF # generate 200 images as the training set
                 test_p=.9,
                 use_cached=False,
                 show=False,
                 oracle_dataset=True,
-                oracle_dataset_using_set_to_goal= False, # True,
-                n_random_steps=100,
+                oracle_dataset_using_set_to_goal= True, # True,
+                n_random_steps=75,
                 non_presampled_goal_img_is_garbage=True,
             ),
             vae_kwargs=dict(
@@ -146,7 +147,7 @@ if __name__ == "__main__":
     for exp_id, variant in enumerate(sweeper.iterate_hyperparameters()):
         for _ in range(n_seeds):
             run_experiment(
-                skewfit_full_experiment,
+                test_initial_vae_training,
                 exp_prefix=exp_prefix,
                 mode=mode,
                 variant=variant,
