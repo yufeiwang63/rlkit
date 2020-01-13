@@ -11,9 +11,9 @@ if __name__ == "__main__":
         algorithm='Skew-Fit',
         double_algo=False,
         online_vae_exploration=False,
-        imsize=84,
+        imsize=48,
         init_camera=sawyer_init_camera_zoomed_in,
-        env_id='PourWaterPosControlGoalConditioned-v0',
+        env_id='ClothFlattenSphereControlGoalConditioned-v0',
         skewfit_variant=dict(
             save_video=True,
             custom_goal_sampler='replay_buffer',
@@ -63,7 +63,7 @@ if __name__ == "__main__":
                     decoder_distribution='gaussian_identity_variance',
                     num_latents_to_sample=10,
                 ),
-                power=-0.5,
+                power=-1,
                 relabeling_goal_sampling_mode='vae_prior',
             ),
             exploration_goal_sampling_mode='vae_prior',
@@ -96,13 +96,13 @@ if __name__ == "__main__":
                 use_cached=False,
                 show=False,
                 oracle_dataset=True,
-                oracle_dataset_using_set_to_goal= False, # True,
+                oracle_dataset_using_set_to_goal= True, # True,
                 n_random_steps=75,
                 non_presampled_goal_img_is_garbage=True,
             ),
             vae_kwargs=dict(
                 input_channels=3,
-                architecture=imsize84_default_architecture,
+                architecture=imsize48_default_architecture,
                 decoder_distribution='gaussian_identity_variance',
             ),
             # TODO: why the redundancy?
@@ -113,7 +113,7 @@ if __name__ == "__main__":
                 lr=1e-3,
                 skew_config=dict(
                     method='vae_prob',
-                    power=-0.5,
+                    power=-1,
                 ),
                 skew_dataset=True,
                 priority_function_kwargs=dict(
@@ -134,15 +134,15 @@ if __name__ == "__main__":
         search_space, default_parameters=variant,
     )
 
-    # n_seeds = 2
-    # mode = 'local'
-    # exp_prefix = 'dev-{}'.format(
-    #     __file__.replace('/', '-').replace('_', '-').split('.')[0]
-    # )
-
     n_seeds = 1
-    mode = 'ec2'
-    exp_prefix = '2019-12-29-rlkit-skew-fit-pour-water-84'
+    mode = 'local'
+    exp_prefix = 'dev-{}'.format(
+        __file__.replace('/', '-').replace('_', '-').split('.')[0]
+    )
+
+    # n_seeds = 1
+    # mode = 'ec2'
+    # exp_prefix = '2019-12-29-rlkit-skew-fit-cloth-flatten-84'
 
     for exp_id, variant in enumerate(sweeper.iterate_hyperparameters()):
         for _ in range(n_seeds):

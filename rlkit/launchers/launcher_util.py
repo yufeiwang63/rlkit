@@ -438,7 +438,7 @@ def run_experiment(
         skip_wait=False,
         # ec2 settings
         sync_interval=180,
-        region='us-east-1',
+        region='us-east-2',
         instance_type=None,
         spot_price=None,
         verbose=False,
